@@ -1,0 +1,20 @@
+name: Daily Job Alert
+
+on:
+  schedule:
+    - cron: '30 1 * * *'  # 7:00 AM IST
+  workflow_dispatch:
+
+jobs:
+  job-alert:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      - run: python nandan_job_alert.py
+        env:
+          EMAIL_USER: ${{ secrets.EMAIL_USER }}
+          EMAIL_PASS: ${{ secrets.EMAIL_PASS }}
+          EMAIL_TO: ${{ secrets.EMAIL_TO }}
