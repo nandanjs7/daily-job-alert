@@ -16,11 +16,11 @@ def search_indeed_jobs():
     headers = {"User-Agent": "Mozilla/5.0"}
     for keyword in job_keywords:
         keyword_query = "+".join(keyword.split())
-        url = f"https://www.indeed.com/jobs?q={keyword_query}&l={location}&fromage=1"
+        url = f"https://www.indeed.com/jobs?q={keyword_query}&l={location}&fromage=3"
         response = requests.get(url, headers=headers)
         soup = BeautifulSoup(response.text, "html.parser")
 
-        for div in soup.find_all(name="a", attrs={"data-hide-spinner": "true"}):
+        for div in soup.find_all("a", attrs={"data-hide-spinner": "true"}):
             title = div.text.strip()
             link = "https://www.indeed.com" + div.get("href")
             if title and link:
@@ -28,31 +28,19 @@ def search_indeed_jobs():
 
     return results
 
-def send_email(jobs):
+def send_email(job_results):
     email_user = os.getenv("EMAIL_USER")
     email_pass = os.getenv("EMAIL_PASS")
     email_to = os.getenv("EMAIL_TO")
 
-    if not jobs:
-        jobs = ["No new jobs found today."]
+    if not job_results:
+        job_results = ["<b>No new jobs found today.</b>"]
 
     msg = MIMEMultipart("alternative")
     msg["Subject"] = "Job Alert – Daily Listings"
     msg["From"] = email_user
     msg["To"] = email_to
 
-    html_jobs = "<br><br>".join(jobs)
+    html_jobs = "<br><br>".join(job_results)
     body = MIMEText(html_jobs, "html")
     msg.attach(body)
-
-    with smtplib.SMTP("smtp.gmail.com", 587) as server:
-        server.starttls()
-        server.login(email_user, email_pass)
-        server.sendmail(email_user, email_to, msg.as_string())
-
-def main():
-    jobs = search_indeed_jobs()
-    send_email(jobs)
-
-if __name__ == "__main__":
-    main()
